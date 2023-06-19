@@ -6,6 +6,7 @@ import CassandraAccess
 
 # get list of Dow tickers
 # OTHER TICKERS, SP500 does not work
+# FULL DOCUMENTATION HERE - https://theautomatic.net/yahoo_fin-documentation/
 
 dow_list = si.tickers_dow()[:2]
 print(dow_list)

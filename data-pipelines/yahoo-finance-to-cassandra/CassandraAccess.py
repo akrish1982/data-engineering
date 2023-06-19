@@ -16,7 +16,7 @@ class CassandraAccess:
     def pd_to_cassandra(self,df):
         pass
         ssl_context = SSLContext(PROTOCOL_TLSv1_2 )
-        ssl_context.load_verify_locations('data-pipelines/sf-class2-root.crt')
+        ssl_context.load_verify_locations('/home/akrish1982/data-engineering/data-pipelines/sf-class2-root.crt')
         ssl_context.verify_mode = CERT_REQUIRED
         auth_provider = PlainTextAuthProvider(username='data-egineering-at-163926246741', password='jgjevjCy26Ue1xrJ5ctdJlIUT95ltVPgbcHVVVQHme0=')
         profile = ExecutionProfile(
@@ -25,9 +25,10 @@ class CassandraAccess:
         cluster = Cluster(['cassandra.us-east-1.amazonaws.com'], ssl_context=ssl_context, auth_provider=auth_provider, port=9142,
                           execution_profiles={EXEC_PROFILE_DEFAULT: profile})
         session = cluster.connect()
-        query = 'INSERT INTO stock_information.stats_valuation_recent("Ticker","Attribute","Recent") VALUES (?,?,?)'
+        query = 'INSERT INTO stock_information.stats_valuation_recent("ticker","attribute","recent") VALUES (?,?,?)'
         prepared = session.prepare(query)
         for index, row  in df.iterrows(): #NOT THE BEST PERFORMANCE<NEEDS TO BE REPLACED>
+            print(row['Ticker'], row['Attribute'],row['Recent'])
             session.execute(prepared, (row['Ticker'], row['Attribute'],row['Recent']))
 
         # # r = session.execute('SELECT * FROM stock_information.stats_valuation_recent')
