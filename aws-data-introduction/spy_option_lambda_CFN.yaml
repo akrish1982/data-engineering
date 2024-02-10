@@ -1,0 +1,95 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'AWS CloudFormation template to fetch SPY option chain data from Yahoo Finance API and store in S3 every hour.'
+
+Resources:
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          -
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: /
+      Policies:
+        - PolicyName: LambdaRolePolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: s3:DeleteObject
+                Resource: !Sub arn:aws:s3:::data-eng-with-aws/*
+              - Effect: Allow
+                Action: s3:*Object
+                Resource: !Sub arn:aws:s3:::data-eng-with-aws/*
+              - Effect: Allow
+                Action: s3:ListBucket
+                Resource: !Sub arn:aws:s3:::data-eng-with-aws
+              - Effect: Allow
+                Action: logs:CreateLogGroup
+                Resource: !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:*
+  SpyOptionChainFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: index.handler
+      Role: !GetAtt LambdaRole.Arn
+      Runtime: python3.8
+      Code:
+        ZipFile: |
+          import json
+          import boto3
+          import urllib3
+          from datetime import datetime
+
+          def handler(event, context):
+            # Your code to fetch data from Yahoo Finance API
+            http = urllib3.PoolManager()
+            url = "https://yfapi.net/v6/finance/options/SPY"
+            headers = {
+                'x-api-key': "nFcBhdY5Mr1zydpKX2pl1alSn7hLwcrU9RDGO2mL"
+            }
+            response = http.request("GET", url, headers=headers)
+            data = response.data.decode('utf-8')  # Decode bytes to string
+
+            # Store the data in S3
+            s3 = boto3.client('s3')
+            bucket_name = 'data-eng-with-aws'
+            # Get current date
+            current_date = datetime.now().strftime("%Y-%m-%d")  # Format date as YYYY-MM-DD
+            file_name = f'{current_date}/SPY_option_chain_{event["time"]}.json'
+            s3.put_object(Bucket=bucket_name, Key=file_name, Body=data)
+
+      Timeout: 120 # Adjust based on the execution time of your function
+      MemorySize: 128
+
+  OptionChainSchedule:
+    Type: AWS::Events::Rule
+    Properties:
+      ScheduleExpression: 'rate(1 hour)'
+      Targets:
+        - Arn: !GetAtt SpyOptionChainFunction.Arn
+          Id: "spyOptionChainTarget"
+          Input: '{"time": "$(date)" }'
+
+  PermissionForEventsToInvokeLambda:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref SpyOptionChainFunction
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt OptionChainSchedule.Arn
+
+Outputs:
+  SpyOptionChainFunctionArn:
+    Description: "ARN of the Lambda function"
+    Value: !GetAtt SpyOptionChainFunction.Arn
