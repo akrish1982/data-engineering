@@ -56,7 +56,7 @@ Resources:
             http = urllib3.PoolManager()
             url = "https://yfapi.net/v6/finance/options/SPY"
             headers = {
-                'x-api-key': "nFcBhdY5Mr1zydpKX2pl1alSn7hLwcrU9RDGO2mL"
+                'x-api-key': "...."
             }
             response = http.request("GET", url, headers=headers)
             data = response.data.decode('utf-8')  # Decode bytes to string
