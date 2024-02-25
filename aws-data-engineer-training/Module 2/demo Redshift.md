@@ -179,12 +179,12 @@ ERROR: Load into table 'customer' failed. Check 'sys_load_error_detail' system t
 ```
 Query the STL_LOAD_ERROR system table for details.
 ```
-select * from SYS_LOAD_ERROR_DETAIL;
+select * from STL_LOAD_ERROR;
 ```
 Notice that there is one row for the column c_nationkey with datatype int with an error message "Invalid digit, Value 'h', Pos 1" indicating that you are trying to load character into an integer column.
 
-Automatic Table Maintenance - ANALYZE and VACUUM
-Analyze:
+##### Automatic Table Maintenance - ANALYZE and VACUUM
+##### Analyze:
 
 When loading into an empty table, the COPY command by default collects statistics (ANALYZE). If you are loading a non-empty table using COPY command, in most cases, you don't need to explicitly run the ANALYZE command. Amazon Redshift monitors changes to your workload and automatically updates statistics in the background. To minimize impact to your system performance, automatic analyze runs during periods when workloads are light.
 
@@ -192,58 +192,50 @@ If you need to analyze the table immediately after load, you can still manually 
 
 To run ANALYZE on orders table, copy the following command and run it.
 
-1
+```
 ANALYZE orders;
-
-Vacuum:
+```
+##### Vacuum:
 
 Vacuum Delete: When you perform delete on a table, the rows are marked for deletion(soft deletion), but are not removed. When you perform an update, the existing rows are marked for deletion(soft deletion) and updated rows are inserted as new rows. Amazon Redshift automatically runs a VACUUM DELETE operation in the background to reclaim disk space occupied by rows that were marked for deletion by UPDATE and DELETE operations, and compacts the table to free up the consumed space. To minimize impact to your system performance, automatic VACUUM DELETE runs during periods when workloads are light.
 
 If you need to reclaim diskspace immediately after a large delete operation, for example after a large data load, then you can still manually run the VACUUM DELETE command. Lets see how VACUUM DELETE reclaims table space after delete operation.
 
 First, capture tbl_rows(Total number of rows in the table. This value includes rows marked for deletion, but not yet vacuumed) and estimated_visible_rows(The estimated visible rows in the table. This value does not include rows marked for deletion) for the ORDERS table. Copy the following command and run it.
-
-1
-2
-3
+```
 select "table", size, tbl_rows, estimated_visible_rows
 from SVV_TABLE_INFO
 where "table" = 'orders';
+```
 
 table	size	tbl_rows	estimated_visible_rows
 orders	6100	76000000	76000000
 Next, delete rows from the ORDERS table. Copy the following command and run it.
 
-1
+```
 delete orders where o_orderdate between '1997-01-01' and '1998-01-01';
-
+```
 Next, capture the tbl_rows and estimated_visible_rows for ORDERS table after the deletion.
 
 Copy the following command and run it. Notice that the tbl_rows value hasn't changed, after deletion. This is because rows are marked for soft deletion, but VACUUM DELETE is not yet run to reclaim space.
-
-1
-2
-3
+```
 select "table", size, tbl_rows, estimated_visible_rows
 from SVV_TABLE_INFO
 where "table" = 'orders';
-
+```
 table	size	tbl_rows	estimated_visible_rows
 orders	5972	76000000	64436860
 Now, run the VACUUM DELETE command. Copy the following command and run it.
 
-1
+```
 vacuum delete only orders;
-
+```
 Confirm that the VACUUM command reclaimed space by running the following query again and noting the tbl_rows value has changed.
-
-1
-2
-3
+```
 select "table", size, tbl_rows, estimated_visible_rows
 from SVV_TABLE_INFO
 where "table" = 'orders';
-
+```
 table	size	tbl_rows	estimated_visible_rows
 orders	5248	64436859	64436860
 Vacuum Sort: When you define SORT KEYS  on your tables, Amazon Redshift automatically sorts data in the background to maintain table data in the order of its sort key. Having sort keys on frequently filtered columns makes block level pruning, which is already efficient in Amazon Redshift, more efficient.
@@ -259,14 +251,14 @@ If you need to run VACUUM SORT, you can still manually run it as shown below. Co
 ```
 vacuum sort only orders;
 
-Vacuum recluster:
 ```
+#### Vacuum recluster:
 Use VACUUM recluster whenever possible for manual VACUUM operations. This is especially important for large objects with frequent ingestion and queries that access only the most recent data. Vacuum recluster only sorts the portions of the table that are unsorted and hence runs faster. Portions of the table that are already sorted are left intact. This command doesn't merge the newly sorted data with the sorted region. It also doesn't reclaim all space that is marked for deletion. In order to run vacuum recluster on orders, copy the following command and run it.
 
 ```
 vacuum recluster orders;
 ```
-Vacuum boost:
+##### Vacuum boost:
 
 Boost runs the VACUUM command with additional compute resources, as they're available. With the BOOST option, VACUUM operates in one window and blocks concurrent deletes and updates for the duration of the VACUUM operation. Note that running vacuum with the BOOST option contends for system resources, which might affect performance of other queries. As a result, it is recommended to run the VACUUM BOOST when the load on the system is light, such as during maintenance operations. In order to run vacuum recluster on orders table in boost mode, copy the following command and run it.
 
