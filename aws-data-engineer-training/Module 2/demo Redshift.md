@@ -4,6 +4,8 @@ https://console.aws.amazon.com/cloudformation/home?#/stacks/new?stackName=Redshi
 #### To connect use
 User Name: awsuser
 Password: Awsuser123
+#### Diststyle, DistKey and SortKey
+
 
 #### TO create tables
 ```
