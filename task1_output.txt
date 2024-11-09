@@ -1,0 +1,33 @@
+Here is the rewritten output file with the questions and answers clearly worded:
+
+task1_output.txt
+
+Question 1: What AWS service is primarily used for monitoring and troubleshooting data processing applications?
+Answer Option 1: Amazon CloudWatch
+Answer Option 2: AWS X-Ray
+Answer Option 3: Amazon S3
+Answer Option 4: AWS Lambda
+Answer Option 5: CloudTrail
+Correct Response: Answer Option 2 - AWS CloudWatch is the primary service used for monitoring and troubleshooting data processing applications.
+Explanation: AWS CloudWatch is a fully-managed monitoring service that provides detailed metrics and logs for AWS services, including data processing applications. It allows for real-time monitoring of application performance and troubleshooting of issues.
+Knowledge Area: Data Operations and Support
+
+Question 2: What practices can help in maintaining consistent data processing outcomes in AWS? (Select all that apply)
+Answer Option 1: Regularly reviewing AWS CloudWatch metrics and logs
+Answer Option 2: Implementing automated scaling policies for data processing services
+Answer Option 3: Using AWS X-Ray for tracing application requests
+Answer Option 4: Configuring CloudTrail for governance, compliance, and auditing of AWS resources
+Answer Option 5: Utilizing Amazon S3 lifecycle policies for data management
+Answer Option 6: Applying AWS Lambda reserved concurrency for critical functions
+Correct Response: Answer Options 1, 2, and 3 - Regularly reviewing AWS CloudWatch metrics and logs, implementing automated scaling policies, and using AWS X-Ray for tracing application requests can help maintain consistent data processing outcomes.
+Explanation: Regularly reviewing AWS CloudWatch metrics and logs allows you to monitor your application's performance and troubleshoot issues. Implementing automated scaling policies ensures that your services can handle the load and perform consistently. Using AWS X-Ray for tracing application requests can help identify issues and bottlenecks in your data processing applications, contributing to maintaining consistent outcomes.
+Knowledge Area: Data Operations and Support
+
+Question 3: Which AWS service API is used to submit a new data processing job?
+Answer Option 1: AWS Lambda Invoke
+Answer Option 2: Amazon S3 PutObject
+Answer Option 3: Amazon SQS SendMessage
+Answer Option 4: AWS Glue StartJobRun
+Correct Response: Answer Option 4 - AWS Glue is the API used to submit a new data processing job.
+Explanation: AWS Glue is a service for preparing and loading data for analytics, and this API call is specifically for initiating data processing jobs.
+Knowledge Area: Data Operations and Support

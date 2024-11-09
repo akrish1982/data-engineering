@@ -23,3 +23,8 @@ The scripts are written in a variety of languages, including Python, Bash, and P
 
 ## Documentation
 The documentation in this repository provides instructions on how to use the code and scripts in this repository.
+
+
+## To activate virtual environment
+source venv/bin/activate
+

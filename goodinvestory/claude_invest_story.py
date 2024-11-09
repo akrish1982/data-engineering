@@ -49,49 +49,18 @@ def get_claude_comps_analysis(ticker, hist_data, balance_sheet, financials, news
         {"role": "user", "content": f"Historical price data:\n{hist_data.tail().to_string()}\n\nBalance Sheet:\n{balance_sheet.to_string()}\n\nFinancial Statements:\n{financials.to_string()}\n\nNews articles:\n{news.strip()}\n\n----\n\nNow, suggest a few comparable companies to consider, in a Python-parseable list. Return nothing but the list. Make sure the companies are in the form of their tickers."},
     ]
 
-
-    headers = {
-        "x-api-key": ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
-        "content-type": "application/json"
-    }
-    data = {
-        "model": 'claude-3-haiku-20240307',
-        "max_tokens": 2000,
-        "temperature": 0.5,
-        "system": system_prompt,
-        "messages": messages,
-    }
-    response = requests.post("https://api.anthropic.com/v1/messages", headers=headers, json=data)
-    print(response.json())
-    response_text = response.json()['content'][0]['text']
+    response_text = access_claude(system_prompt, messages)
 
     return ast.literal_eval(response_text)
 
-def compare_companies(main_ticker, main_data, comp_ticker, comp_data):
-    system_prompt = f"You are a financial analyst assistant. Compare the data of {main_ticker} against {comp_ticker} and provide a detailed comparison, like a world-class analyst would. Be measured and discerning. Truly think about the positives and negatives of each company. Be sure of your analysis. You are a skeptical investor."
+# def compare_companies(main_ticker, main_data, comp_ticker, comp_data):
+#     system_prompt = f"You are a financial analyst assistant. Compare the data of {main_ticker} against {comp_ticker} and provide a detailed comparison, like a world-class analyst would. Be measured and discerning. Truly think about the positives and negatives of each company. Be sure of your analysis. You are a skeptical investor."
 
-    messages = [
-        {"role": "user", "content": f"Data for {main_ticker}:\n\nHistorical price data:\n{main_data['hist_data'].tail().to_string()}\n\nBalance Sheet:\n{main_data['balance_sheet'].to_string()}\n\nFinancial Statements:\n{main_data['financials'].to_string()}\n\n----\n\nData for {comp_ticker}:\n\nHistorical price data:\n{comp_data['hist_data'].tail().to_string()}\n\nBalance Sheet:\n{comp_data['balance_sheet'].to_string()}\n\nFinancial Statements:\n{comp_data['financials'].to_string()}\n\n----\n\nNow, provide a detailed comparison of {main_ticker} against {comp_ticker}. Explain your thinking very clearly."},
-    ]
+#     messages = [
+#         {"role": "user", "content": f"Data for {main_ticker}:\n\nHistorical price data:\n{main_data['hist_data'].tail().to_string()}\n\nBalance Sheet:\n{main_data['balance_sheet'].to_string()}\n\nFinancial Statements:\n{main_data['financials'].to_string()}\n\n----\n\nData for {comp_ticker}:\n\nHistorical price data:\n{comp_data['hist_data'].tail().to_string()}\n\nBalance Sheet:\n{comp_data['balance_sheet'].to_string()}\n\nFinancial Statements:\n{comp_data['financials'].to_string()}\n\n----\n\nNow, provide a detailed comparison of {main_ticker} against {comp_ticker}. Explain your thinking very clearly."},
+#     ]
 
-    headers = {
-        "x-api-key": ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
-        "content-type": "application/json"
-    }
-    data = {
-        "model": 'claude-3-haiku-20240307',
-        "max_tokens": 3000,
-        "temperature": 0.5,
-        "system": system_prompt,
-        "messages": messages,
-    }
-    response = requests.post("https://api.anthropic.com/v1/messages", headers=headers, json=data)
-    response_text = response.json()['content'][0]['text']
-
-    # return json.loads(response_text)
-    return response_text
+#     return access_claude(system_prompt, messages)
 
 def get_sentiment_analysis(ticker, news):
     system_prompt = f"You are a sentiment analysis assistant. Analyze the sentiment of the given news articles for {ticker} and provide a summary of the overall sentiment and any notable changes over time. Be measured and discerning. You are a skeptical investor."
@@ -106,22 +75,7 @@ def get_sentiment_analysis(ticker, news):
         {"role": "user", "content": f"News articles for {ticker}:\n{news_text}\n\n----\n\nProvide a summary of the overall sentiment and any notable changes over time."},
     ]
 
-    headers = {
-        "x-api-key": ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
-        "content-type": "application/json"
-    }
-    data = {
-        "model": 'claude-3-haiku-20240307',
-        "max_tokens": 2000,
-        "temperature": 0.5,
-        "system": system_prompt,
-        "messages": messages,
-    }
-    response = requests.post("https://api.anthropic.com/v1/messages", headers=headers, json=data)
-    response_text = response.json()['content'][0]['text']
-
-    return response_text
+    return access_claude(system_prompt, messages)
 
 def get_analyst_ratings(ticker):
     stock = yf.Ticker(ticker)
@@ -153,22 +107,7 @@ def get_industry_analysis(ticker):
         {"role": "user", "content": f"Provide an analysis of the {industry} industry and {sector} sector."},
     ]
 
-    headers = {
-        "x-api-key": ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
-        "content-type": "application/json"
-    }
-    data = {
-        "model": 'claude-3-haiku-20240307',
-        "max_tokens": 2000,
-        "temperature": 0.5,
-        "system": system_prompt,
-        "messages": messages,
-    }
-    response = requests.post("https://api.anthropic.com/v1/messages", headers=headers, json=data)
-    response_text = response.json()['content'][0]['text']
-
-    return response_text
+    return access_claude(system_prompt, messages)
 
 
 def get_final_analysis(ticker, comparisons, sentiment_analysis, analyst_ratings, industry_analysis):
@@ -178,28 +117,13 @@ def get_final_analysis(ticker, comparisons, sentiment_analysis, analyst_ratings,
         {"role": "user", "content": f"Ticker: {ticker}\n\nComparative Analysis:\n{json.dumps(comparisons, indent=2)}\n\nSentiment Analysis:\n{sentiment_analysis}\n\nAnalyst Ratings:\n{analyst_ratings}\n\nIndustry Analysis:\n{industry_analysis}\n\nBased on the provided data and analyses, please provide a comprehensive investment analysis and recommendation for {ticker}. Consider the company's financial strength, growth prospects, competitive position, and potential risks. Provide a clear and concise recommendation on whether to buy, hold, or sell the stock, along with supporting rationale."},
     ]
 
-    headers = {
-        "x-api-key": ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
-        "content-type": "application/json"
-    }
-    data = {
-        "model": 'claude-3-opus-20240229',
-        "max_tokens": 3000,
-        "temperature": 0.5,
-        "system": system_prompt,
-        "messages": messages,
-    }
-    response = requests.post("https://api.anthropic.com/v1/messages", headers=headers, json=data)
-    response_text = response.json()['content'][0]['text']
-
-    return response_text
+    return access_claude(system_prompt, messages)
 
 def generate_ticker_ideas():
-    system_prompt = f"You are a financial analyst assistant. Generate a list of 5 ticker symbols for major companies in the US, as a Python-parseable list."
+    system_prompt = f"You are a financial analyst assistant. Generate a list of 3 ticker symbols for major companies in the US, as a Python-parseable list."
 
     messages = [
-        {"role": "user", "content": f"Please provide a list of 5 ticker symbols for major companies in the US as a Python-parseable list. Only respond with the list, no other text."},
+        {"role": "user", "content": f"Please provide a list of 3 ticker symbols for major companies in the US as a Python-parseable list. Only respond with the list, no other text."},
     ]
 
     ticker_list = ast.literal_eval(access_claude(system_prompt, messages))
