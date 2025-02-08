@@ -1,0 +1,7 @@
+name: pulumi_nginx
+description: nginx instances
+runtime: go
+config:
+  pulumi:tags:
+    value:
+      pulumi:template: aws-go
