@@ -74,3 +74,23 @@ func createKafkaSecurityGroup(ctx *pulumi.Context, vpc *ec2.Vpc, tags pulumi.Str
 	}
 	return securityGroup, nil
 }
+
+// Function to create a security group for Kafka Connect to access Nginx logs
+func createKafkaConnectSecurityGroup(ctx *pulumi.Context, vpc *ec2.Vpc, tags pulumi.StringMap) (*ec2.SecurityGroup, error) {
+	securityGroup, err := ec2.NewSecurityGroup(ctx, "KafkaConnectSecurityGroup", &ec2.SecurityGroupArgs{
+		VpcId: vpc.ID(),
+		Ingress: ec2.SecurityGroupIngressArray{
+			ec2.SecurityGroupIngressArgs{
+				Protocol:   pulumi.String("tcp"),
+				FromPort:   pulumi.Int(8080), // HTTP log access
+				ToPort:     pulumi.Int(8080),
+				CidrBlocks: pulumi.StringArray{pulumi.String("10.0.0.0/16")}, // Allow internal access
+			},
+		},
+		Tags: tags,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return securityGroup, nil
+}

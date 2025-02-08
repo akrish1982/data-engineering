@@ -1,6 +1,8 @@
 package main
 
 import (
+	"strconv"
+
 	"github.com/pulumi/pulumi-aws/sdk/v6/go/aws/ec2"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
@@ -20,7 +22,8 @@ func createNginxInstances(ctx *pulumi.Context, subnet *ec2.Subnet, securityGroup
 
 	instances := []*ec2.Instance{}
 	for i := 1; i <= 3; i++ {
-		instance, err := ec2.NewInstance(ctx, *pulumi.String("nginx-instance-%d", i), &ec2.InstanceArgs{
+		instanceName := "nginx-instance-" + strconv.Itoa(i) // nginx-instance-1, nginx-instance-2, nginx-instance-3
+		instance, err := ec2.NewInstance(ctx, instanceName, &ec2.InstanceArgs{
 			InstanceType:        pulumi.String("t3.micro"),
 			VpcSecurityGroupIds: pulumi.StringArray{securityGroup.ID()},
 			SubnetId:            subnet.ID(),

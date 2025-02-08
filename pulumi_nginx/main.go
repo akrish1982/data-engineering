@@ -40,6 +40,17 @@ func main() {
 		if err != nil {
 			return err
 		}
+		// Create Security Groups
+		nginxSecurityGroup, err := createNginxSecurityGroup(ctx, ec2Vpc, tags)
+		if err != nil {
+			return err
+		}
+
+		// Create Nginx Instances
+		_, err = createNginxInstances(ctx, ec2Subnet, nginxSecurityGroup, tags)
+		if err != nil {
+			return err
+		}
 
 		// Create MSK Kafka Cluster in Kafka-VPC (Private Subnet)
 		mskCluster, err := createMskCluster(ctx, kafkaVpc, kafkaSubnet, tags)
