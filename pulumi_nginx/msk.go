@@ -6,15 +6,21 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
-func createMskCluster(ctx *pulumi.Context, vpc *ec2.Vpc, subnet *ec2.Subnet, tags pulumi.StringMap) (*msk.Cluster, error) {
+// Function to create an MSK Cluster with two subnets
+func createMskCluster(ctx *pulumi.Context, vpc *ec2.Vpc, subnets []*ec2.Subnet, tags pulumi.StringMap) (*msk.Cluster, error) {
+	subnetIds := pulumi.StringArray{}
+	for _, subnet := range subnets {
+		subnetIds = append(subnetIds, subnet.ID())
+	}
+
 	cluster, err := msk.NewCluster(ctx, "KafkaCluster", &msk.ClusterArgs{
 		BrokerNodeGroupInfo: &msk.ClusterBrokerNodeGroupInfoArgs{
 			InstanceType:   pulumi.String("kafka.m5.large"),
-			ClientSubnets:  pulumi.StringArray{subnet.ID()},
-			SecurityGroups: pulumi.StringArray{}, // Add SG if needed
+			ClientSubnets:  subnetIds,            // ✅ Now using multiple subnets
+			SecurityGroups: pulumi.StringArray{}, // Add security groups as needed
 		},
 		KafkaVersion:        pulumi.String("2.8.1"),
-		NumberOfBrokerNodes: pulumi.Int(3),
+		NumberOfBrokerNodes: pulumi.Int(6),
 		Tags:                tags,
 	})
 	if err != nil {

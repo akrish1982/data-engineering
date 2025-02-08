@@ -17,8 +17,8 @@ func main() {
 			return err
 		}
 
-		// Create Kafka VPC
-		kafkaVpc, kafkaSubnet, err := createVpc(ctx, "Kafka-VPC", "10.1.0.0/16", tags)
+		// Create Kafka VPC with Multiple Subnets
+		kafkaVpc, kafkaSubnets, err := createVpcMultipleSubnets(ctx, "Kafka-VPC", "10.1.0.0/16", tags)
 		if err != nil {
 			return err
 		}
@@ -52,14 +52,14 @@ func main() {
 			return err
 		}
 
-		// Create MSK Kafka Cluster in Kafka-VPC (Private Subnet)
-		mskCluster, err := createMskCluster(ctx, kafkaVpc, kafkaSubnet, tags)
+		// Create MSK Kafka Cluster with Multiple Subnets
+		mskCluster, err := createMskCluster(ctx, kafkaVpc, kafkaSubnets, tags)
 		if err != nil {
 			return err
 		}
 
 		// Create MSK Kafka Connect in Kafka-VPC (after MSK Cluster is created)
-		_, err = createMskKafkaConnect(ctx, mskCluster, pulumi.StringArray{kafkaSubnet.ID()}, kafkaSecurityGroup.ID(), tags)
+		_, err = createMskKafkaConnect(ctx, mskCluster, pulumi.StringArray{kafkaSubnets[0].ID()}, kafkaSecurityGroup.ID(), tags)
 		if err != nil {
 			return err
 		}
